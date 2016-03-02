@@ -2,7 +2,7 @@ name = DBC Zabbix
 description = Module that extend Zabbix with monitoring of webservice versions used.
 package = Monitoring
 core = 7.x
-version = "7.x-0.1"
+version = 7.x-0.1
 project = DBC Zabbix
 
 dependencies[] = zabbix
