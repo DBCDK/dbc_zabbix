@@ -1,0 +1,103 @@
+<?php
+/**
+ * @file
+ * Bibliotek.dk search carousel module main file.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function dbc_zabbix_menu() {
+
+  $items = array();
+
+  $items['admin/config/development/zabbix/dbc'] = array(
+    'title' => t('DBC settings'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('dbc_zabbix_settings_form'),
+    'access arguments' => array('administer zabbix'),
+    'file' => 'dbc_zabbix.admin.inc',
+    'type' => MENU_LOCAL_TASK
+  );
+
+  return $items;
+
+}
+
+
+/**
+ * Implementation of hook_theme().
+ */
+function dbc_zabbix_theme() {
+
+  $path = drupal_get_path('module', 'dbc_zabbix') . '/theme';
+
+  return array(
+    'dbc_zabbix_settings_theme' => array(
+      'render element' => 'form',
+      'path' => $path,
+      'template' => 'dbc-zabbix-settings-theme',
+    ),
+  );
+
+}
+
+
+/**
+ * Implements hook_zabbix_items().
+ *
+ * @return
+ *   Return array of items where the key is the name of the function
+ *   that will be called to create the value to pass to zabbix.
+ *   and the value is the human readable title of the item, which
+ *   should be brief but descriptive.
+ */
+function dbc_zabbix_zabbix_items() {
+
+  return array(
+    'dbc_zabbix_webservices_urls' => array(
+      'key' => 'dbc.drupal.webservices.urls',
+      'title' => 'List of webservice URLs used in Drupal installation',
+      'description' => 'send webservice URLs',
+      'dependencies' => NULL,
+    ),
+  );  
+
+}
+
+
+/**
+ * Collect the http endpoints used in the Drupal installation.
+ */
+function dbc_zabbix_webservices_urls() {
+
+  $zabbix_data = array();
+
+  $client = new ting_client_class();
+
+  foreach ( $client->getUrls() as $service ) {
+    $zabbix_item = array();
+    if ( !empty($service['class']) && !empty($service['url']) ) {
+      $zabbix_item['label']   = $service['class'];
+      $zabbix_item['url']     = $service['url'];
+      if (!empty($service['xsd_url'])) {
+        $zabbix_item['xsd_url'] = variable_get($service['xsd_url'], NULL);
+      }
+      $zabbix_data[] = implode(' : ', $zabbix_item);
+    }
+  }
+
+  $dbc_zabbix_settings = variable_get('dbc_zabbix_settings', array());
+
+  foreach ( $dbc_zabbix_settings as $service ) {
+    $zabbix_item = array();
+    if ( !empty($service['label']) && !empty($service['url']) ) {
+      $zabbix_item['label']   = $service['label'];
+      $zabbix_item['url']     = variable_get($service['url'], NULL);
+      $zabbix_data[] = implode(' : ', $zabbix_item);
+    }
+  }
+
+  return implode(", \n", $zabbix_data);
+
+}
