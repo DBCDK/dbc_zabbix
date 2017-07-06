@@ -6,6 +6,6 @@ version = 7.x-0.1
 project = DBC Zabbix
 
 dependencies[] = zabbix
-dependencies[] = ting-client
+dependencies[] = ting_client
 
 configure = admin/config/development/zabbix/dbc
